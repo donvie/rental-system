@@ -56,13 +56,7 @@
     </q-list>
 
     <div align="right">
-      <q-btn
-        unelevated
-        size="17px"
-        dense
-        color="primary"
-        label="Send Request"
-      />
+      <q-btn unelevated size="17px" dense color="primary" label="Send Rental" />
     </div>
 
     <!-- <q-dialog v-model="placeOrderLayout">

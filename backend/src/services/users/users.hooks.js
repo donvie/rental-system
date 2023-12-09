@@ -1,4 +1,5 @@
 const { authenticate } = require('@feathersjs/authentication').hooks;
+const search = require("feathers-nedb-fuzzy-search");
 
 const {
   hashPassword, protect
@@ -7,7 +8,10 @@ const {
 module.exports = {
   before: {
     all: [],
-    find: [ authenticate('jwt') ],
+    find: [ authenticate('jwt'),
+    search({
+      deep: true,
+    }), ],
     get: [ authenticate('jwt') ],
     create: [ hashPassword('password') ],
     update: [ hashPassword('password'),  authenticate('jwt') ],

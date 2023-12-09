@@ -319,7 +319,7 @@
                 class="float-right q-mr-md q-mb-md"
                 color="blue"
                 label="Place Order"
-                to="/history"
+                to="/rentals"
               />
               <q-btn
                 flat

@@ -1,61 +1,140 @@
 <template>
-  <q-layout>
+  <q-layout class="bg-image">
     <q-page-container>
-      <q-page class="flex bg-image flex-center">
-        <q-card
-          v-bind:style="$q.screen.lt.sm ? { width: '80%' } : { width: '30%' }"
-        >
-          <q-card-section>
-            <div class="text-center q-pt-lg">
-              <div class="col text-h6 ellipsis">Log in</div>
-            </div>
-          </q-card-section>
-          <q-card-section>
-            <q-form class="q-gutter-md">
-              <q-input filled v-model="username" label="Username" lazy-rules />
+      <q-page class="flex flex-center" padding>
+        <q-card bordered class="my-login no-shadow q-pa-lg">
+          <q-item class="q-mt-md">
+            <q-item-section>
+              <q-item-label class="text-h4">Log in</q-item-label>
+              <q-item-label class="text-subtitle1">
+                FARM EQUIPMENT RENTAL SYSTEM
+              </q-item-label>
+            </q-item-section>
+          </q-item>
 
-              <q-input
-                type="password"
-                filled
-                v-model="password"
-                label="Password"
-                lazy-rules
-              />
-
-              <div class="q-gutter-xs text-center">
-                <q-btn label="Login" to="/" type="button" color="primary" />
-                <q-btn
-                  label="Register"
-                  to="/register"
-                  type="button"
-                  outline
-                  color="primary"
+          <q-card-section class="q-mt-sm">
+            <q-input
+              ref="emailRef"
+              class="q-mb-sm"
+              v-model="email"
+              label="Email"
+              :rules="[(val) => !!val || 'Username is required']"
+            >
+              <template v-slot:prepend>
+                <q-icon name="person" />
+              </template>
+            </q-input>
+            <q-input
+              ref="passwordRef"
+              class="q-mb-sm"
+              :type="isPwd ? 'password' : 'text'"
+              v-model="password"
+              label="Password"
+              :rules="[(val) => !!val || 'Password is required']"
+            >
+              <template v-slot:prepend>
+                <q-icon name="lock" />
+              </template>
+              <template v-slot:append v-if="password && password.length > 0">
+                <q-icon
+                  :name="isPwd ? 'visibility_off' : 'visibility'"
+                  class="cursor-pointer"
+                  @click="isPwd = !isPwd"
                 />
-              </div>
-            </q-form>
+              </template>
+            </q-input>
           </q-card-section>
+
+          <q-card-actions align="center">
+            <q-btn
+              label="Sign up"
+              to="/signup"
+              type="button"
+              outline
+              color="primary"
+            />
+            <q-btn
+              @click="logIn()"
+              :loading="isLoading"
+              :disable="isLoading"
+              unelevated
+              color="primary"
+              >Log in</q-btn
+            >
+          </q-card-actions>
+
+          <q-card-actions align="center">
+            <q-btn to="forgot-password" flat color="primary"
+              >Forgot Password?</q-btn
+            >
+          </q-card-actions>
         </q-card>
       </q-page>
     </q-page-container>
   </q-layout>
 </template>
 
-<script>
-import { defineComponent } from "vue";
-import { ref } from "vue";
+<script setup>
+import { useQuasar } from "quasar";
+import { ref, getCurrentInstance } from "vue";
 
-export default defineComponent({
-  setup() {
-    return {
-      username: ref("Pratik"),
-      password: ref("12345"),
-    };
-  },
-});
+const $q = useQuasar();
+const app = getCurrentInstance().appContext.config.globalProperties;
+const email = ref("");
+const emailRef = ref(null);
+const password = ref("");
+const passwordRef = ref(null);
+const isLoading = ref(false);
+const isPwd = ref(true);
+
+function logIn() {
+  emailRef.value.validate();
+  passwordRef.value.validate();
+
+  if (!emailRef.value.hasError || !passwordRef.value.hasError) {
+    isLoading.value = true;
+    app.$feathersClient
+      .authenticate({
+        strategy: "local",
+        email: email.value,
+        password: password.value,
+      })
+      .then((data) => {
+        app.$user = data.user;
+        app.$router.push("/");
+        console.log("data", data);
+        $q.notify({
+          position: "top",
+          color: "positive",
+          timeout: 2000,
+          icon: "check",
+          message: "You have successfully logged in.",
+        });
+        isLoading.value = false;
+      })
+      .catch((e) => {
+        console.error("Authentication error", e);
+        $q.notify({
+          position: "top",
+          color: "negative",
+          timeout: 2000,
+          icon: "error",
+          message: "Error!",
+        });
+        isLoading.value = false;
+      });
+  }
+}
 </script>
 
-<style>
-.bg-image {
-  background-image: linear-gradient(135deg, #598216 0%, #e5b2ca 100%);
-}
+<style lang="sass" scoped>
+.toolbar
+  min-height: 36px
+.my-login
+  width: 100%
+  max-width: 450px
+  height: 460px
+
+.bg-image
+  background-image: linear-gradient(135deg, #598216 0%, #e5b2ca 100%)
 </style>

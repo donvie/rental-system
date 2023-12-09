@@ -13,13 +13,13 @@
     "build": "quasar build"
   },
   "dependencies": {
-    "@feathersjs/authentication-client": "^5.0.12",
-    "@feathersjs/feathers": "^5.0.12",
-    "@feathersjs/socketio-client": "^5.0.12",
+    "@feathersjs/authentication-client": "^4.5.11",
+    "@feathersjs/feathers": "^4.5.11",
+    "@feathersjs/socketio-client": "^4.5.11",
     "@quasar/extras": "^1.16.4",
     "pinia": "^2.0.11",
     "quasar": "^2.6.0",
-    "socket.io-client": "^4.7.2",
+    "socket.io-client": "^2.4.0",
     "vue": "^3.0.0",
     "vue-router": "^4.0.0"
   },

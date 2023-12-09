@@ -6,32 +6,13 @@
           <q-icon name="agriculture" size="42px" />
         </q-btn>
 
-        <q-toolbar-title>FARM EQUIPMENT RENTAL SYSTEM</q-toolbar-title>
+        <q-toolbar-title>FARM EQUIPMENT RENTAL SYSTEM </q-toolbar-title>
 
-        <!-- <q-btn
-          to="admin"
-          flat
-          v-close-popup
-          round
-          dense
-          label="Admin"
-          class="q-mr-md"
-        >
-        </q-btn> -->
-
-        <!-- <q-btn
-          to="basket"
-          flat
-          v-close-popup
-          round
-          dense
-          icon="shopping_cart"
-          class="q-mr-md"
-        >
-          <q-badge color="red" floating>4</q-badge>
-        </q-btn> -->
-
-        <q-btn icon="account_circle" flat label="T. Test">
+        <q-btn flat>
+          <q-avatar size="42px" class="q-mr-xs">
+            <img :src="`http://localhost:3030/${$user.imagePath}`" />
+          </q-avatar>
+          <span>{{ $user.firstName.charAt(0) }}. {{ $user.lastName }}</span>
           <q-menu>
             <q-list style="min-width: 350px">
               <q-item clickable v-close-popup to="/" exact>
@@ -48,16 +29,29 @@
                 <q-item-section>Profile</q-item-section>
               </q-item>
 
-              <q-item clickable v-close-popup to="/history" exact>
+              <q-item clickable v-close-popup to="/rentals" exact>
                 <q-item-section avatar>
                   <q-icon color="primary" name="history" />
                 </q-item-section>
-                <q-item-section>History</q-item-section>
+                <q-item-section>Rentals</q-item-section>
               </q-item>
 
-              <q-item clickable v-close-popup exact to="login">
+              <q-item
+                v-if="$user.type === 'admin'"
+                clickable
+                v-close-popup
+                to="/users"
+                exact
+              >
                 <q-item-section avatar>
-                  <q-icon color="primary" name="logout" to="login" />
+                  <q-icon color="primary" name="group" />
+                </q-item-section>
+                <q-item-section>Users</q-item-section>
+              </q-item>
+
+              <q-item clickable v-close-popup exact @click="logOut()">
+                <q-item-section avatar>
+                  <q-icon color="primary" name="logout" />
                 </q-item-section>
                 <q-item-section>Logout</q-item-section>
               </q-item>
@@ -70,36 +64,18 @@
     <q-footer flat class="bg-transparent">
       <q-card class="q-mt-md row no-shadow" bordered>
         <q-card-section class="col-12 text-center q-pa-lg">
-          <q-btn icon="fab fa-github" flat dense color="grey-8"></q-btn>
+          <!-- <q-btn icon="fab fa-github" flat dense color="grey-8"></q-btn>
           <q-btn icon="fab fa-facebook" flat dense color="grey-8"></q-btn>
           <q-btn icon="fab fa-twitter" flat dense color="grey-8"></q-btn>
           <q-btn icon="fab fa-instagram" flat dense color="grey-8"></q-btn>
-          <br />
+          <br /> -->
 
           <div class="text-body1 q-mt-sm text-grey-8 text-weight-bold">
             Copyright ©, 2023 FARM EQUIPMENT RENTAL SYSTEM, All Rights Reserved
           </div>
         </q-card-section>
       </q-card>
-      <!-- <q-toolbar class="text-center">
-        <q-toolbar-title class="text-caption"
-          >Copyright ©, 2023 FARM EQUIPMENT RENTAL SYSTEM, All Rights
-          Reserved</q-toolbar-title
-        >
-      </q-toolbar> -->
     </q-footer>
-
-    <q-drawer v-model="leftDrawerOpen" bordered>
-      <q-list>
-        <q-item-label header> Essential Links </q-item-label>
-
-        <EssentialLink
-          v-for="link in essentialLinks"
-          :key="link.title"
-          v-bind="link"
-        />
-      </q-list>
-    </q-drawer>
 
     <q-page-container>
       <router-view />
@@ -107,74 +83,33 @@
   </q-layout>
 </template>
 
-<script>
-import { defineComponent, ref } from "vue";
-import EssentialLink from "components/EssentialLink.vue";
+<script setup>
+import { useQuasar } from "quasar";
+import { ref, getCurrentInstance } from "vue";
+const app = getCurrentInstance().appContext.config.globalProperties;
+const $q = useQuasar();
 
-const linksList = [
-  {
-    title: "Docs",
-    caption: "quasar.dev",
-    icon: "school",
-    link: "https://quasar.dev",
-  },
-  {
-    title: "Github",
-    caption: "github.com/quasarframework",
-    icon: "code",
-    link: "https://github.com/quasarframework",
-  },
-  {
-    title: "Discord Chat Channel",
-    caption: "chat.quasar.dev",
-    icon: "chat",
-    link: "https://chat.quasar.dev",
-  },
-  {
-    title: "Forum",
-    caption: "forum.quasar.dev",
-    icon: "record_voice_over",
-    link: "https://forum.quasar.dev",
-  },
-  {
-    title: "Twitter",
-    caption: "@quasarframework",
-    icon: "rss_feed",
-    link: "https://twitter.quasar.dev",
-  },
-  {
-    title: "Facebook",
-    caption: "@QuasarFramework",
-    icon: "public",
-    link: "https://facebook.quasar.dev",
-  },
-  {
-    title: "Quasar Awesome",
-    caption: "Community Quasar projects",
-    icon: "favorite",
-    link: "https://awesome.quasar.dev",
-  },
-];
-
-export default defineComponent({
-  name: "MainLayout",
-
-  components: {
-    EssentialLink,
-  },
-
-  setup() {
-    const leftDrawerOpen = ref(false);
-
-    return {
-      essentialLinks: linksList,
-      leftDrawerOpen,
-      toggleLeftDrawer() {
-        leftDrawerOpen.value = !leftDrawerOpen.value;
-      },
-    };
-  },
-});
+function logOut() {
+  $q.dialog({
+    title: "Confirm",
+    message: "Are you sure you want to logout?",
+    cancel: true,
+    persistent: true,
+  })
+    .onOk(() => {
+      app.$feathersClient.logout().then(() => {
+        app.$user = null;
+        app.$router.push("/login");
+      });
+      // console.log('>>>> OK')
+    })
+    .onCancel(() => {
+      // console.log('>>>> Cancel')
+    })
+    .onDismiss(() => {
+      // console.log('I am triggered on both OK and Cancel')
+    });
+}
 </script>
 
 <style lang="sass" scoped>
